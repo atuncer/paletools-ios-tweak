@@ -15,9 +15,10 @@ sideloaded IPA via **Sideloadly** / **Feather** / **TrollFools** — no jailbrea
 | `Makefile` | yes | Theos build config (rootless by default). |
 | `control` | yes | Package metadata. |
 | `PaleTools.plist` | yes | Process filter — targets `com.ea.gp.fifaultimate`. |
-| `build-inject.sh` | yes | Decodes → wraps → gzips the PaleTools blob into `generated/`. |
-| `paletools-mobile.prod.js` | vendored | The PaleTools payload. **Replace this to update versions.** |
-| `generated/` | no (gitignored) | Machine output: `inject.js`, `pt_payload.gz`, `injectjs.h`. |
+| `build-inject.sh` | yes | Fetches → decodes → wraps → gzips the PaleTools blob into `generated/`. |
+| `fetch-mobile-prod.mjs` | yes | Pulls the pinned `PALETOOLS_VERSION` bundle from the pale.tools API. |
+| `paletools-mobile.prod.js` | vendored | Offline fallback, only used if the API fetch fails. |
+| `generated/` | no (gitignored) | Machine output: fetched bundle, `inject.js`, `pt_payload.gz`, `injectjs.h`. |
 
 Nothing under `generated/` is hand-edited or committed; it is rebuilt on every `make`.
 
@@ -29,9 +30,10 @@ Requires [Theos](https://theos.dev) (`export THEOS=~/theos`).
 make clean && make package
 ```
 
-`before-all` runs `build-inject.sh` automatically, so the embedded payload is always
-regenerated from `paletools-mobile.prod.js`. Each `make package` writes **both** of
-these to `packages/`:
+`before-all` runs `build-inject.sh` automatically, which fetches the `PALETOOLS_VERSION`
+pinned in the `Makefile` from the pale.tools API and embeds it. If the fetch fails
+(no network, pale.tools down), it falls back to the vendored `paletools-mobile.prod.js`.
+Each `make package` writes **both** of these to `packages/`:
 
 - `com.paletools.eafc.injector_*.deb` — the tweak package.
 - `PaleTools.dylib` — the standalone fat dylib (arm64 + arm64e), the same signed bits
@@ -60,13 +62,17 @@ upload them as workflow artifacts (no release).
 
 ## Updating PaleTools
 
-1. Replace `paletools-mobile.prod.js` with the new version (same filename).
-2. `make clean && make package`.
+1. Bump `PALETOOLS_VERSION` in `Makefile`.
+2. `make clean && make package` — `build-inject.sh` fetches that version from
+   `https://pale.tools/fifa/dist/<version>/mobile/paletools-mobile.prod.js`.
 
-The build extracts whatever blob the file contains regardless of version key, so a
-normal version bump needs no other changes. If the build prints
+The decode step extracts whatever blob the response contains regardless of version
+key, so a normal version bump needs no other changes. If the build prints
 `could not find paletools blob`, PaleTools changed its file format and the decode step
 in `build-inject.sh` needs updating.
+
+To refresh the offline fallback, run `node fetch-mobile-prod.mjs <version> >
+paletools-mobile.prod.js` and commit the result.
 
 ## Verifying injection
 
