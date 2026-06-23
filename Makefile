@@ -9,8 +9,9 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = PaleTools
 
 PaleTools_FILES = Tweak.x
-PaleTools_CFLAGS = -fobjc-arc -Wno-overlength-strings
+PaleTools_CFLAGS = -fobjc-arc
 PaleTools_FRAMEWORKS = WebKit
+PaleTools_LIBRARIES = z
 
 # Regenerate the embedded JS header before compiling.
 before-all::
