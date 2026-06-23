@@ -45,6 +45,19 @@ Pick by install method:
 - **No jailbreak**: inject `packages/PaleTools.dylib` into the EA IPA with
   Sideloadly / Feather / TrollFools (they bundle the Substrate shim automatically).
 
+## Releases (CI)
+
+`.github/workflows/release.yml` builds on a macOS runner (uses Xcode's iOS SDK, no
+toolchain setup needed). Push a tag to cut a release:
+
+```bash
+git tag v26.0.28 && git push origin v26.0.28
+```
+
+That builds with `FINALPACKAGE=1` and attaches both the `.deb` and `PaleTools.dylib`
+to the GitHub Release. Manual `workflow_dispatch` runs build the same binaries and
+upload them as workflow artifacts (no release).
+
 ## Updating PaleTools
 
 1. Replace `paletools-mobile.prod.js` with the new version (same filename).
