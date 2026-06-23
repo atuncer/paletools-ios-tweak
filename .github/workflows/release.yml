@@ -26,12 +26,12 @@ jobs:
           brew install ldid dpkg
 
       - name: Set up Node (used by build-inject.sh)
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "24"
 
       - name: Cache Theos
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/theos
           # Bump the suffix to force a fresh Theos clone.
