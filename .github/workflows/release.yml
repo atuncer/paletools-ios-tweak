@@ -14,15 +14,21 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install build tools (ldid for signing, dpkg for packaging)
-        run: brew install ldid dpkg
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+        run: |
+          # Drop pre-installed untrusted taps so brew doesn't warn about them.
+          brew untap aws/tap azure/bicep 2>/dev/null || true
+          brew install ldid dpkg
 
       - name: Set up Node (used by build-inject.sh)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Set up Theos
         run: |
@@ -36,7 +42,7 @@ jobs:
         run: ls -la packages/
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: paletools-binaries
           path: |
