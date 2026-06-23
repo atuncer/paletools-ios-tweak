@@ -1,0 +1,9 @@
+Package: com.paletools.eafc.injector
+Name: PaleTools EAFC Injector
+Version: 26.0.28
+Architecture: iphoneos-arm64
+Description: Injects PaleTools into the EA SPORTS FC Companion WebView.
+Maintainer: you
+Author: you
+Section: Tweaks
+Depends: ellekit
