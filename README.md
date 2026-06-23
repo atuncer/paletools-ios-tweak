@@ -1,6 +1,6 @@
 # PaleTools EAFC Injector
 
-A self-contained iOS tweak that injects [PaleTools](https://paletools.app/) into the
+A self-contained iOS tweak that injects [PaleTools](https://pale.tools) into the
 EA SPORTS FC Companion app. It hooks `WKWebView` and adds the PaleTools bundle as a
 `WKUserScript`, so the app's own `www` bundle is never modified.
 
