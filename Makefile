@@ -18,3 +18,10 @@ before-all::
 	@./build-inject.sh
 
 include $(THEOS_MAKE_PATH)/tweak.mk
+
+# Drop the standalone dylib next to the .deb, for Sideloadly/Feather/TrollFools.
+# Pulls the staged copy (same bits that ship in the .deb), rootless or rootful.
+after-stage::
+	@mkdir -p packages
+	@find "$(THEOS_STAGING_DIR)" -name '$(TWEAK_NAME).dylib' -exec cp {} "packages/$(TWEAK_NAME).dylib" \;
+	@echo "==> Extracted dylib: packages/$(TWEAK_NAME).dylib"

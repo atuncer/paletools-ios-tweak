@@ -30,14 +30,20 @@ make clean && make package
 ```
 
 `before-all` runs `build-inject.sh` automatically, so the embedded payload is always
-regenerated from `paletools-mobile.prod.js`. Output: `packages/*.deb`.
+regenerated from `paletools-mobile.prod.js`. Each `make package` writes **both** of
+these to `packages/`:
+
+- `com.paletools.eafc.injector_*.deb` — the tweak package.
+- `PaleTools.dylib` — the standalone fat dylib (arm64 + arm64e), the same signed bits
+  that ship inside the `.deb`, extracted for direct injection.
+
+Pick by install method:
 
 - **Rootless jailbreak** (default): install the `.deb` with Sileo/Zebra.
 - **Rootful jailbreak**: comment out `THEOS_PACKAGE_SCHEME = rootless` in `Makefile`
   and change `Depends: ellekit` → `Depends: mobilesubstrate` in `control`.
-- **No jailbreak**: run `make` to produce `.theos/obj/PaleTools.dylib` and inject it
-  into the EA IPA with Sideloadly / Feather / TrollFools (they bundle the Substrate
-  shim automatically).
+- **No jailbreak**: inject `packages/PaleTools.dylib` into the EA IPA with
+  Sideloadly / Feather / TrollFools (they bundle the Substrate shim automatically).
 
 ## Updating PaleTools
 
