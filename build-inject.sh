@@ -1,22 +1,36 @@
 #!/bin/bash
-# Decode the PaleTools blob, wrap it in a load-waiter, gzip it, and embed the
-# compressed bytes as a C array. Everything this script writes goes into
-# generated/ — it is machine output, never hand-edited, and gitignored.
+# Fetch the pinned PaleTools bundle from the API, decode it, wrap it in a
+# load-waiter, gzip it, and embed the compressed bytes as a C array.
+# Everything this script writes goes into generated/ — it is machine output,
+# never hand-edited, and gitignored.
 set -e
 DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
-PROD="paletools-mobile.prod.js"
+VENDORED="paletools-mobile.prod.js"
 GEN="generated"
+FETCHED="$GEN/paletools-mobile.prod.js"
 OUT_JS="$GEN/inject.js"
 OUT_GZ="$GEN/pt_payload.gz"
 OUT_H="$GEN/injectjs.h"
 
-if [ ! -f "$PROD" ]; then
-    echo "error: $PROD not found" >&2
-    exit 1
-fi
+: "${PALETOOLS_VERSION:?PALETOOLS_VERSION is not set (see Makefile)}"
 
 mkdir -p "$GEN"
+
+# Pull the pinned version straight from the API. If that fails (offline
+# build, pale.tools down), fall back to the vendored copy.
+if node fetch-mobile-prod.mjs "$PALETOOLS_VERSION" > "$FETCHED.tmp"; then
+    mv "$FETCHED.tmp" "$FETCHED"
+    PROD="$FETCHED"
+else
+    rm -f "$FETCHED.tmp"
+    echo "warning: could not fetch PaleTools $PALETOOLS_VERSION, falling back to vendored $VENDORED" >&2
+    if [ ! -f "$VENDORED" ]; then
+        echo "error: $VENDORED not found and fetch failed" >&2
+        exit 1
+    fi
+    PROD="$VENDORED"
+fi
 
 # Decode prod.js -> raw self-executing bundle, then wrap so it runs after the
 # app's SPA has booted (the bundle is an IIFE; we just delay it to load).
