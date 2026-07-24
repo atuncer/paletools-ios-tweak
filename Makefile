@@ -17,7 +17,7 @@ export PALETOOLS_VERSION
 
 PaleTools_FILES = Tweak.x
 PaleTools_CFLAGS = -fobjc-arc
-PaleTools_FRAMEWORKS = WebKit
+PaleTools_FRAMEWORKS = WebKit UIKit
 PaleTools_LIBRARIES = z
 
 # Regenerate the embedded JS header before compiling.
