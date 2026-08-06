@@ -66,6 +66,14 @@ upload them as workflow artifacts (no release).
 2. `make clean && make package` — `build-inject.sh` fetches that version from
    `https://pale.tools/fifa/dist/<version>/mobile/paletools-mobile.prod.js`.
 
+Setting `PALETOOLS_VERSION = latest` tracks whatever pale.tools currently ships.
+There is no `dist/latest/mobile/paletools-mobile.prod.js` (that path 404s), so
+`latest` is resolved in two steps: `@version` is read from the header of
+`dist/latest/paletools-mobile.user.js`, then that exact version is fetched. The
+resolved version is printed during the build. Note that `latest` makes builds
+non-reproducible — the same commit can embed a different bundle tomorrow — so
+prefer an explicit pin for anything you tag and release.
+
 The decode step extracts whatever blob the response contains regardless of version
 key, so a normal version bump needs no other changes. If the build prints
 `could not find paletools blob`, PaleTools changed its file format and the decode step

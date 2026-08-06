@@ -11,8 +11,9 @@ TWEAK_NAME = PaleTools
 # Pinned PaleTools mobile bundle version, fetched from the pale.tools API at
 # build time. Bump this to update; falls back to the vendored
 # paletools-mobile.prod.js if the fetch fails. Override per-build with
-# `make package PALETOOLS_VERSION=x.y.z`.
-PALETOOLS_VERSION = 26.0.29
+# `make package PALETOOLS_VERSION=x.y.z`, or use `latest` to track whatever
+# pale.tools currently ships (the resolved version is printed during the build).
+PALETOOLS_VERSION = 26.0.30
 export PALETOOLS_VERSION
 
 PaleTools_FILES = Tweak.x
