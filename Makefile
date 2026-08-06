@@ -8,12 +8,15 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = PaleTools
 
-# Pinned PaleTools mobile bundle version, fetched from the pale.tools API at
-# build time. Bump this to update; falls back to the vendored
-# paletools-mobile.prod.js if the fetch fails. Override per-build with
-# `make package PALETOOLS_VERSION=x.y.z`, or use `latest` to track whatever
-# pale.tools currently ships (the resolved version is printed during the build).
-PALETOOLS_VERSION = 26.0.30
+# PaleTools mobile bundle version, fetched from the pale.tools API at build time.
+# `latest` tracks whatever pale.tools currently ships, so re-running the release
+# workflow picks up a new PaleTools with no code change. CI resolves it to a
+# concrete version first and stamps that into `control`, so released artifacts
+# are always labelled with the real version, never "latest".
+# Pin an explicit version here (or `make package PALETOOLS_VERSION=x.y.z`) when
+# you need a reproducible build. Falls back to the vendored
+# paletools-mobile.prod.js if the fetch fails.
+PALETOOLS_VERSION = latest
 export PALETOOLS_VERSION
 
 PaleTools_FILES = Tweak.x

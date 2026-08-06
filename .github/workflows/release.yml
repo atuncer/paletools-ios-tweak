@@ -46,16 +46,40 @@ jobs:
           fi
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
 
+      # Resolve PALETOOLS_VERSION (usually `latest`) to a concrete version ONCE,
+      # so the stamped metadata can't drift from the bundle that gets embedded.
+      - name: Resolve PaleTools version
+        id: paletools
+        run: |
+          PIN=$(sed -n 's/^PALETOOLS_VERSION[[:space:]]*=[[:space:]]*//p' Makefile | head -1)
+          VERSION=$(node fetch-mobile-prod.mjs --resolve "$PIN")
+          if [ -z "$VERSION" ]; then echo "could not resolve '$PIN'" >&2; exit 1; fi
+          echo "PALETOOLS_VERSION '$PIN' -> '$VERSION'"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      # The .deb takes its filename and package version from `control`, so stamp
+      # the resolved version in before packaging. perl -i avoids the BSD/GNU sed
+      # -i difference on the macOS runner.
+      - name: Stamp resolved version into control
+        run: |
+          perl -pi -e 's/^Version:.*/Version: ${{ steps.paletools.outputs.version }}/' control
+          grep '^Version:' control
+
+      # Pass the resolved version explicitly: the build must not re-resolve
+      # `latest` and risk embedding a different bundle than we just stamped.
       - name: Build (.deb + standalone .dylib)
-        run: make package FINALPACKAGE=1
+        run: make package FINALPACKAGE=1 PALETOOLS_VERSION=${{ steps.paletools.outputs.version }}
 
       - name: Show outputs
-        run: ls -la packages/
+        run: |
+          ls -la packages/
+          echo "### PaleTools ${{ steps.paletools.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          ls packages/ >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: paletools-binaries
+          name: paletools-binaries-${{ steps.paletools.outputs.version }}
           path: |
             packages/*.deb
             packages/PaleTools.dylib
@@ -65,6 +89,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
+          name: PaleTools ${{ steps.paletools.outputs.version }}
           files: |
             packages/*.deb
             packages/PaleTools.dylib
