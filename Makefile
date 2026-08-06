@@ -12,12 +12,12 @@ TWEAK_NAME = PaleTools
 # build time. Bump this to update; falls back to the vendored
 # paletools-mobile.prod.js if the fetch fails. Override per-build with
 # `make package PALETOOLS_VERSION=x.y.z`.
-PALETOOLS_VERSION = 26.0.28
+PALETOOLS_VERSION = 26.0.29
 export PALETOOLS_VERSION
 
 PaleTools_FILES = Tweak.x
 PaleTools_CFLAGS = -fobjc-arc
-PaleTools_FRAMEWORKS = WebKit UIKit
+PaleTools_FRAMEWORKS = WebKit
 PaleTools_LIBRARIES = z
 
 # Regenerate the embedded JS header before compiling.

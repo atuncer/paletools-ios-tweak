@@ -32,25 +32,20 @@ else
     PROD="$VENDORED"
 fi
 
-# Decode prod.js -> raw self-executing bundle, append our own addons, then wrap
-# so it all runs after the app's SPA has booted (the bundle is an IIFE; we just
-# delay it to load).
+# Decode prod.js -> raw self-executing bundle, then wrap so it runs after the
+# app's SPA has booted (the bundle is an IIFE; we just delay it to load).
 node -e '
 const fs = require("fs");
 const src = fs.readFileSync(process.argv[1], "utf8");
 const m = src.match(/=\s*"([^"]*)";?\s*$/s);
 if (!m) { console.error("could not find paletools blob"); process.exit(1); }
 const bundle = decodeURIComponent(m[1]);
-const addons = process.argv.slice(3)
-  .map(f => "\n;/* addon: " + f + " */\ntry{\n" + fs.readFileSync(f, "utf8") +
-            "\n}catch(e){console.error(\x27[PaleTools] addon failed\x27,e);}\n")
-  .join("");
 const wrapped =
-  "/*__PALETOOLS_INJECTED__*/\n(function(){function boot(){\n" + bundle + addons +
+  "/*__PALETOOLS_INJECTED__*/\n(function(){function boot(){\n" + bundle +
   "\n}\nif(document.readyState===\x27complete\x27)setTimeout(boot,0);" +
   "else addEventListener(\x27load\x27,function(){setTimeout(boot,0)});})();\n";
 fs.writeFileSync(process.argv[2], wrapped);
-' "$PROD" "$OUT_JS" inject/export-settings.js
+' "$PROD" "$OUT_JS"
 
 gzip -9 -n -c "$OUT_JS" > "$OUT_GZ"
 

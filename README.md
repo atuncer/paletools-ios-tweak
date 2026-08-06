@@ -17,7 +17,6 @@ sideloaded IPA via **Sideloadly** / **Feather** / **TrollFools** — no jailbrea
 | `PaleTools.plist` | yes | Process filter — targets `com.ea.gp.fifaultimate`. |
 | `build-inject.sh` | yes | Fetches → decodes → wraps → gzips the PaleTools blob into `generated/`. |
 | `fetch-mobile-prod.mjs` | yes | Pulls the pinned `PALETOOLS_VERSION` bundle from the pale.tools API. |
-| `inject/export-settings.js` | yes | Adds the **Export Settings** button; appended to the bundle at build time. |
 | `paletools-mobile.prod.js` | vendored | Offline fallback, only used if the API fetch fails. |
 | `generated/` | no (gitignored) | Machine output: fetched bundle, `inject.js`, `pt_payload.gz`, `injectjs.h`. |
 
@@ -74,27 +73,6 @@ in `build-inject.sh` needs updating.
 
 To refresh the offline fallback, run `node fetch-mobile-prod.mjs <version> >
 paletools-mobile.prod.js` and commit the result.
-
-## Exporting your settings
-
-PaleTools settings live entirely in `localStorage`:
-
-- `paletools:settings` — base64 of `JSON.stringify(settings)`.
-- `paletools:<APP_YEAR>:<userId>:<key>` — one plain-JSON entry per plugin.
-- A few values are written to `sessionStorage` instead.
-
-PaleTools' own Backup screen can't be used on iPhone: the button that opens it is
-wrapped in `if (!isPhone())`, and its download uses `<a download>` + a `blob:` URL,
-which WKWebView ignores. So `inject/export-settings.js` adds an **Export Settings**
-button to the `.top-commands` bar at the top of the PaleTools settings screen,
-next to *Reset Settings*.
-
-Tapping it dumps **all** of `localStorage` and `sessionStorage` (raw, so the file
-stays re-importable) plus a decoded copy of `paletools:settings` for readability,
-then posts it to the tweak over the `paletoolsExport` script message handler.
-`Tweak.x` writes the JSON to a temp file and opens the iOS share sheet, so you can
-*Save to Files*, AirDrop or mail it. Outside a WKWebView the script falls back to a
-normal anchor download.
 
 ## Verifying injection
 
