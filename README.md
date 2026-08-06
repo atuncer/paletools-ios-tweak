@@ -60,19 +60,36 @@ That builds with `FINALPACKAGE=1` and attaches both the `.deb` and `PaleTools.dy
 to the GitHub Release. Manual `workflow_dispatch` runs build the same binaries and
 upload them as workflow artifacts (no release).
 
+### Version stamping
+
+`PALETOOLS_VERSION` defaults to `latest`, so **re-running the workflow picks up a
+new PaleTools with no code change** — no commit needed to ship a fresh build.
+
+Artifacts are never labelled `latest`. CI resolves it to a concrete version once,
+up front, then:
+
+1. stamps that version into `control`, so the `.deb` is named
+   `com.paletools.eafc.injector_<version>_iphoneos-arm64.deb`,
+2. names the workflow artifact `paletools-binaries-<version>`,
+3. titles a tagged release `PaleTools <version>`,
+4. passes the same version back into `make`, so the build never re-resolves
+   `latest` and can't embed a different bundle than the one just stamped.
+
 ## Updating PaleTools
 
-1. Bump `PALETOOLS_VERSION` in `Makefile`.
-2. `make clean && make package` — `build-inject.sh` fetches that version from
-   `https://pale.tools/fifa/dist/<version>/mobile/paletools-mobile.prod.js`.
+With `PALETOOLS_VERSION = latest` (the default) there is nothing to update — just
+re-run the workflow, or `make clean && make package` locally.
 
-Setting `PALETOOLS_VERSION = latest` tracks whatever pale.tools currently ships.
+To pin instead, set `PALETOOLS_VERSION` to an explicit version in `Makefile` (or
+`make package PALETOOLS_VERSION=x.y.z`). Pin anything you need to reproduce later:
+`latest` means the same commit can embed a different bundle tomorrow.
+
 There is no `dist/latest/mobile/paletools-mobile.prod.js` (that path 404s), so
 `latest` is resolved in two steps: `@version` is read from the header of
 `dist/latest/paletools-mobile.user.js`, then that exact version is fetched. The
-resolved version is printed during the build. Note that `latest` makes builds
-non-reproducible — the same commit can embed a different bundle tomorrow — so
-prefer an explicit pin for anything you tag and release.
+resolved version is always printed during the build. `fetch-mobile-prod.mjs
+--resolve <version|latest>` prints just the resolved version, downloading nothing;
+that is what CI uses for stamping.
 
 The decode step extracts whatever blob the response contains regardless of version
 key, so a normal version bump needs no other changes. If the build prints
