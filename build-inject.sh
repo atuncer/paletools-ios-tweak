@@ -17,9 +17,16 @@ OUT_H="$GEN/injectjs.h"
 
 mkdir -p "$GEN"
 
-# Pull the pinned version straight from the API. If that fails (offline
-# build, pale.tools down), fall back to the vendored copy.
-if node fetch-mobile-prod.mjs "$PALETOOLS_VERSION" > "$FETCHED.tmp"; then
+# An explicit local source is used for patched/deobfuscated builds. Otherwise,
+# pull the pinned version from the API and fall back to the vendored copy.
+if [ -n "${PALETOOLS_SOURCE:-}" ]; then
+    if [ ! -f "$PALETOOLS_SOURCE" ]; then
+        echo "error: PALETOOLS_SOURCE not found: $PALETOOLS_SOURCE" >&2
+        exit 1
+    fi
+    PROD="$PALETOOLS_SOURCE"
+    echo "using local PaleTools payload: $PROD"
+elif node fetch-mobile-prod.mjs "$PALETOOLS_VERSION" > "$FETCHED.tmp"; then
     mv "$FETCHED.tmp" "$FETCHED"
     PROD="$FETCHED"
 else

@@ -82,6 +82,12 @@ in `build-inject.sh` needs updating.
 To refresh the offline fallback, run `node fetch-mobile-prod.mjs <version> >
 paletools-mobile.prod.js` and commit the result.
 
+For a patched local payload, bypass the API fetch explicitly:
+
+```bash
+PALETOOLS_SOURCE="$PWD/paletools-mobile.prod.js" make clean package
+```
+
 ## Verifying injection
 
 On launch, look for `[PaleTools] injected WKUserScript into WKWebView` in the device
